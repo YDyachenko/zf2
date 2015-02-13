@@ -75,6 +75,9 @@ class SessionManagerFactoryTest extends \PHPUnit_Framework_TestCase
         $this->assertNotSame($manager, Container::getDefaultManager());
     }
 
+    /**
+     * @runInSeparateProcess
+     */
     public function testFactoryWillAddValidatorViaConfiguration()
     {
         $config = array('session_manager' => array(
@@ -84,6 +87,7 @@ class SessionManagerFactoryTest extends \PHPUnit_Framework_TestCase
         ));
         $this->services->setService('Config', $config);
         $manager = $this->services->get('Zend\Session\ManagerInterface');
+        $manager->start();
 
         $this->assertEquals(1, $manager->getValidatorChain()->getListeners('session.validate')->count());
     }

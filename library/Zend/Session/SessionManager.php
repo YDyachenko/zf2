@@ -118,6 +118,8 @@ class SessionManager extends AbstractManager
         } elseif ($storage instanceof Storage\StorageInitializationInterface) {
             $storage->init($_SESSION);
         }
+        
+        $this->getValidatorChain()->attachValidators();
 
         if (!$this->isValid()) {
             throw new Exception\RuntimeException('Session validation failed');

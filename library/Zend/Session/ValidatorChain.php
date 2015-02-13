@@ -21,24 +21,58 @@ class ValidatorChain extends EventManager
      * @var Storage
      */
     protected $storage;
+    
+    /**
+     * 
+     * @var array 
+     */
+    protected $validators = array();
 
     /**
      * Construct the validation chain
-     *
-     * Retrieves validators from session storage and attaches them.
      *
      * @param Storage $storage
      */
     public function __construct(Storage $storage)
     {
         $this->storage = $storage;
+    }
+    
+    /**
+     * Attach validators
+     * 
+     * @return ValidatorChain
+     */
+    public function attachValidators()
+    {
+        $metadata   = $this->storage->getMetadata('_VALID');
+        $validators = $this->validators;
 
-        $validators = $storage->getMetadata('_VALID');
-        if ($validators) {
-            foreach ($validators as $validator => $data) {
-                $this->attach('session.validate', array(new $validator($data), 'isValid'));
-            }
+        if ($metadata) {
+            $validators = array_unique(array_merge($validators, array_keys($metadata)));
         }
+
+        foreach ($validators as $validator) {
+            $data = isset($metadata[$validator]) ? $metadata[$validator] : null;
+            $this->attach('session.validate', array(new $validator($data), 'isValid'));
+        }
+
+        return $this;
+    }
+
+    /**
+     * Add session validator
+     * 
+     * @param string $validator
+     * @return ValidatorChain
+     */
+    public function addValidator($validator)
+    {
+        if (!in_array($validator, $this->validators)) {
+            $this->validators[] = $validator;
+        }
+        
+        return $this;
     }
 
     /**
